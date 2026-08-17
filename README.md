@@ -7,7 +7,7 @@ construct the volatility smile and measure the variance risk premium.
 
 ## Motivation
 
-This project was built to develop hands-on intuition for derivatives pricing and risk measurement. 
+This project was built to develop intuition for derivatives pricing and risk measurement. 
 The Greeks are central to how traders hedge options positions in practice. Delta hedging, Gamma 
 scalping, and Vega management all depend on accurate and fast Greeks computation. The implied 
 volatility solver reverses the model to extract market-implied expectations from observed prices, 
@@ -34,7 +34,7 @@ or SABR become necessary.
 
 **d1 and d2** are the core intermediate values in the Black-Scholes formula. d1 measures how 
 far the spot price is from the strike, adjusted for expected drift and volatility over the 
-option's life. N(d1) gives the option's Delta — the probability that the option ends in the 
+option's life. N(d1) gives the option's Delta or the probability that the option ends in the 
 money under the stock measure. d2 adjusts d1 by one standard deviation of the stock's return 
 (σ√T) and represents the risk-neutral probability that the option expires in the money. N(d2) 
 is the probability used to discount the expected strike payment.
@@ -50,7 +50,7 @@ paying the strike.
 - **Theta** — time decay per calendar day
 - **Rho** — sensitivity to the risk-free rate (per 1% change)
 
-**Implied Volatility** inverts the model — given an observed market price, Brent's method 
+**Implied Volatility** inverts the model given an observed market price, Brent's method 
 numerically solves for the volatility that makes the Black-Scholes price match the market. 
 This is how the volatility surface is constructed in practice.
 
@@ -58,7 +58,7 @@ This is how the volatility surface is constructed in practice.
 Brownian Motion and averaging the discounted payoffs. It converges to the Black-Scholes price 
 as the number of simulations increases, validating the closed-form solution.
 
-**European vs American Options** — this engine prices European-style options, which can only 
+**European vs American Options** this engine prices European-style options, which can only 
 be exercised at expiry. American options can be exercised at any point before expiry and require 
 numerical methods such as binomial trees due to the early exercise premium. SPY options are 
 technically American-style, introducing a small early exercise premium not captured here — a 
@@ -127,11 +127,11 @@ df = compare_iv("SPY", r=0.05)
 
 ## Project Structure
 
-black_scholes.py # Core pricing engine, Greeks, Monte Carlo, IV solver, market data
-greeks.png # Option price and Greeks across spot prices
-theta_decay.png # Option price decay as expiry approaches
-mc_convergence.png # Monte Carlo convergence to Black-Scholes price
-iv_surface.png # Implied volatility surface across strikes and expiries
+- black_scholes.py # Core pricing engine, Greeks, Monte Carlo, IV solver, market data
+- greeks.png # Option price and Greeks across spot prices
+- theta_decay.png # Option price decay as expiry approaches
+- mc_convergence.png # Monte Carlo convergence to Black-Scholes price
+- iv_surface.png # Implied volatility surface across strikes and expiries
 
 ## Dependencies
 
