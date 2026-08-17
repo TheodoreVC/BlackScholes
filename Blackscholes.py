@@ -54,34 +54,34 @@ class BlackScholes:
     # -----------------------------------------------Greeks----------------------------------------------
 
     def delta(self, option_type: str = "call") -> float:
-        """Rate of change of option price with respect to spot price."""
+        """Rate of change of option price with respect to spot price"""
         if option_type == "call":
             return norm.cdf(self.d1)
         return norm.cdf(self.d1) - 1
 
     def gamma(self) -> float:
-        """Rate of change of Delta with respect to spot price. Same for calls and puts."""
+        """Rate of change of Delta with respect to spot price for calls and puts"""
         return norm.pdf(self.d1) / (self.S * self.sigma * np.sqrt(self.T))
 
     def vega(self) -> float:
-        """Sensitivity to volatility. Returns value per 1% change in vol."""
+        """Sensitivity to volatility. Returns value per 1% change in volatility"""
         return self.S * norm.pdf(self.d1) * np.sqrt(self.T) * 0.01
 
     def theta(self, option_type: str = "call") -> float:
-        """Time decay per calendar day."""
+        """Time decay per day"""
         common = -(self.S * norm.pdf(self.d1) * self.sigma) / (2 * np.sqrt(self.T))
         if option_type == "call":
             return (common - self.r * self.K * np.exp(-self.r * self.T) * norm.cdf(self.d2)) / 365
         return (common + self.r * self.K * np.exp(-self.r * self.T) * norm.cdf(-self.d2)) / 365
 
     def rho(self, option_type: str = "call") -> float:
-        """Sensitivity to risk-free rate. Returns value per 1% change in rate."""
+        """Sensitivity to risk-free rate. Returns value per 1% change in rate"""
         if option_type == "call":
             return self.K * self.T * np.exp(-self.r * self.T) * norm.cdf(self.d2) * 0.01
         return -self.K * self.T * np.exp(-self.r * self.T) * norm.cdf(-self.d2) * 0.01
 
     def summary(self, option_type: str = "call") -> None:
-        """Print a summary of price and all Greeks."""
+        """Prints a summary of price and all Greeks."""
         price = self.call_price() if option_type == "call" else self.put_price()
         print(f"\n{'='*40}")
         print(f"Black-Scholes {option_type.upper()} Option Summary")
@@ -102,8 +102,8 @@ class BlackScholes:
 
 def monte_carlo_price(S, K, r, T, sigma, option_type="call", n_sims=100_000) -> float:
     """
-    Price a European option via Monte Carlo simulation using GBM.
-    Useful for validating Black-Scholes analytically.
+    Price a European option through Monte Carlo simulation using GBM.
+    Useful for validating Black-Scholes analytically
     """
     np.random.seed(42)
     Z = np.random.standard_normal(n_sims)
@@ -118,7 +118,7 @@ def monte_carlo_price(S, K, r, T, sigma, option_type="call", n_sims=100_000) -> 
 
 
 def mc_convergence(S, K, r, T, sigma, option_type="call", max_sims=100_000):
-    """Plot Monte Carlo convergence toward Black-Scholes price."""
+    """Plot Monte Carlo convergence toward Black-Scholes price"""
     bs = BlackScholes(S, K, r, T, sigma)
     bs_price = bs.call_price() if option_type == "call" else bs.put_price()
     
@@ -141,7 +141,7 @@ def mc_convergence(S, K, r, T, sigma, option_type="call", max_sims=100_000):
 def get_real_data(ticker="SPY"):
     stock = yf.Ticker(ticker)
 
-    # Some ETFs don't have currentPrice in info, use last close as fallback
+    # Some ETFs (like S%P) don't have currentPrice in info, use last close instead
     try:
         S = stock.info["currentPrice"]
     except KeyError:
@@ -150,12 +150,12 @@ def get_real_data(ticker="SPY"):
         except KeyError:
             S = stock.history(period="1d")["Close"].iloc[-1]
     
-    # Historical volatility — annualized std of log returns
+    # Historical volatility / Annualized std of log returns
     hist = stock.history(period="1y")
     log_returns = np.log(hist["Close"] / hist["Close"].shift(1)).dropna()
     sigma = log_returns.std() * np.sqrt(252)  # annualize
     
-    # Options chain — real market prices
+    # Options chain for real market prices
     expiries = stock.options  # available expiry dates
     chain = stock.option_chain(expiries[2])  # pick an expiry
     calls = chain.calls
@@ -192,7 +192,7 @@ def compare_iv(ticker="SPY", r=0.05):
             except KeyError:
                 S = stock.history(period="1d")["Close"].iloc[-1]
     
-    # Historical vol as your sigma estimate
+    # Historical vol as the sigma estimate
     hist = stock.history(period="1y")
     log_returns = np.log(hist["Close"] / hist["Close"].shift(1)).dropna()
     hist_vol = log_returns.std() * np.sqrt(252)
@@ -216,19 +216,19 @@ def compare_iv(ticker="SPY", r=0.05):
         market_price = row["lastPrice"]
         market_iv = row["impliedVolatility"]
         
-        # Your BS price using historical vol
+        # BS price using historical volatility
         bs = BlackScholes(S, K, r, T, hist_vol)
         bs_price = bs.call_price()
         
-        # Your implied vol from market price
-        your_iv = implied_volatility(market_price, S, K, r, T)
+        # Implied vol from market price
+        iv = implied_volatility(market_price, S, K, r, T)
         
         results.append({
             "Strike": K,
             "Market Price": market_price,
             "BS Price (hist vol)": round(bs_price, 2),
             "Market IV": round(market_iv, 4),
-            "Your IV": round(your_iv, 4) if not np.isnan(your_iv) else None
+            "IV": round(iv, 4) if not np.isnan(iv) else None
         })
     
     df = pd.DataFrame(results)
@@ -281,7 +281,7 @@ def plot_iv_surface(ticker="SPY", r=0.05):
 def implied_volatility(market_price, S, K, r, T, option_type="call") -> float:
     """
     Back out implied volatility from a market price using Brent's method.
-    Returns implied vol as a decimal (e.g. 0.25 = 25%).
+    Returns implied volatility as a decimal
     """
     def objective(sigma):
         bs = BlackScholes(S, K, r, T, sigma)
@@ -301,7 +301,7 @@ def implied_volatility(market_price, S, K, r, T, option_type="call") -> float:
 # ------------------------------------------------Visualizations-----------------------------------------
 
 def plot_price_and_greeks(K, r, T, sigma, option_type="call"):
-    """Plot option price, Delta, Gamma, Theta, and Vega across spot prices."""
+    """Plot option price, Delta, Gamma, Theta, and Vega across spot prices"""
     spot_range = np.linspace(K * 0.5, K * 1.5, 200)
     
     prices, deltas, gammas, thetas, vegas = [], [], [], [], []
@@ -341,7 +341,7 @@ def plot_price_and_greeks(K, r, T, sigma, option_type="call"):
 
 
 def plot_theta_decay(S, K, r, sigma, option_type="call"):
-    """Show how option price decays as expiry approaches."""
+    """Show how option price decays as expiry approaches"""
     time_range = np.linspace(0.01, 1.0, 200)
     prices = [BlackScholes(S, K, r, T, sigma).call_price() 
               if option_type == "call" 
@@ -397,8 +397,8 @@ if __name__ == "__main__":
 
 
     # Volume Risk Premium
-    print(f"\nVol Risk Premium: {df['Your IV'].mean() - df['Market IV'].mean():.2%}")
-    print("Positive premium = market pricing more future uncertainty than historical vol implies")
+    print(f"\nVol Risk Premium: {df['IV'].mean() - df['Market IV'].mean():.2%}")
+    print("Positive premium means market pricing more future uncertainty than historical vol implies")
     
     # Plots
     plot_price_and_greeks(K, r, T, sigma, "call")
