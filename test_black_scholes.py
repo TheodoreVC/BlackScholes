@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from black_scholes import BlackScholes, implied_volatility, monte_carlo_price
+from BlackScholes import BlackScholes, implied_volatility, monte_carlo_price
 
 class TestBlackScholes:
 
