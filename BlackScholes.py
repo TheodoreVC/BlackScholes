@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 from datetime import datetime
 
+# Pick an ETF
+ticker = "SPY"
+
 class BlackScholes:
 
     """
@@ -138,10 +141,12 @@ def mc_convergence(S, K, r, T, sigma, option_type="call", max_sims=100_000):
 
 # ----------------------------------------------Real Market Data --------------------------------------
 
-def get_real_data(ticker="SPY"):
+
+
+def get_real_data(ticker):
     stock = yf.Ticker(ticker)
 
-    # Some ETFs (like S%P) don't have currentPrice in info, use last close instead
+    # Some ETFs (like S&P) don't have currentPrice in info, use last close instead
     try:
         S = stock.info["currentPrice"]
     except KeyError:
@@ -180,7 +185,7 @@ S, sigma, calls, puts = get_real_data("SPY")
 print(f"Spot: {S}, Historical Vol: {sigma:.2%}")
 print(calls[["strike", "lastPrice", "impliedVolatility"]].head(10))
 
-def compare_iv(ticker="SPY", r=0.05):
+def compare_iv(ticker, r=0.05):
     stock = yf.Ticker(ticker)
 
     # Same as in get_real_data, might not have current price
@@ -235,7 +240,7 @@ def compare_iv(ticker="SPY", r=0.05):
     print(df.to_string(index=False))
     return df
 
-def plot_iv_surface(ticker="SPY", r=0.05):
+def plot_iv_surface(ticker, r=0.05):
     stock = yf.Ticker(ticker)
     # Same as in get_real_data, might not have current price
     try:
@@ -384,7 +389,6 @@ if __name__ == "__main__":
 
     # Real Market Data 
 
-    ticker = "SPY"
     print(f"\nFetching real market data for {ticker}...")
     
     S_real, sigma_real, calls, puts = get_real_data(ticker)
@@ -397,8 +401,8 @@ if __name__ == "__main__":
 
 
     # Volume Risk Premium
-    print(f"\nVol Risk Premium: {df['IV'].mean() - df['Market IV'].mean():.2%}")
-    print("Positive premium means market pricing more future uncertainty than historical vol implies")
+    print(f"\nVolatility Risk Premium: {df['IV'].mean() - df['Market IV'].mean():.2%}")
+    print("Positive premium means market is pricing more future uncertainty than historical volatility  implies")
     
     # Plots
     plot_price_and_greeks(K, r, T, sigma, "call")
